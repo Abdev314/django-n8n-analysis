@@ -1,0 +1,338 @@
+{
+  "name": "n8n-workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "arduino",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -896,
+        528
+      ],
+      "id": "8d3c3894-9a17-406d-b5f1-15cf67c7b37b",
+      "name": "Webhook1",
+      "webhookId": "45f1bac9-0969-4ded-9135-6dea056c5c14"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        240,
+        144
+      ],
+      "id": "3c159b43-d1b2-49df-803e-bdccbdc9ec2f",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// // Node: Transform for LLM\n// const items = $input.all();\n// return items.map(item => ({\n//   json: {\n//     chatInput: item.json.content || item.json.data || JSON.stringify(item.json)\n//   }\n// }));\n\n\n\n\n\n// Node: Transform for LLM\nconst items = $input.all();\n\nreturn items.map(item => {\n  // Extract the actual message from the Telegram Trigger or previous node\n  const rawContent = item.json.message?.text || item.json.content || JSON.stringify(item.json);\n  \n  // Clean out the \"/data\" command if it's still there\n  const cleanInput = rawContent.replace(/\\/data\\s*/i, '').trim();\n\n  return {\n    json: {\n      // We add a 'system_instruction' to the prompt to force plain text\n      chatInput: `System: Reply in plain text only. Do not use Markdown, bold (*), or italics (_). \\n\\nUser Question: ${cleanInput}`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        128
+      ],
+      "id": "c9317917-2808-41f4-8472-8f9adc2bbb98",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/chat",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"llama3.1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a file analysis assistant. Analyze the provided content and explain what the file contains.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this file content and tell me what it's about:\\n\\n\" + $json.chatInput\n    }\n  ],\n  \"stream\": false,\n  \"temperature\": 0.7\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "a14055ec-eb90-4564-82f8-b1808a6645aa",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -576,
+        368
+      ],
+      "id": "7d006abf-ab69-4038-95c1-13c3770d9c8c",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "chatId": "Your-chat-id",
+        "text": "={{ $json.message.content }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        -32
+      ],
+      "id": "259d8ff4-cf69-4232-a7bc-fe41b1301834",
+      "name": "Send a text message1",
+      "webhookId": "2e040ea8-db9b-40de-b93a-d3ae1e03d086",
+      "credentials": {
+        "telegramApi": {
+          "id": "yBnpjALXtbWZuKBO",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pdf-analyze",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        576
+      ],
+      "id": "f8d81af0-01c4-4e1a-a7a0-8fa581f7c324",
+      "name": "Webhook",
+      "webhookId": "1556ff79-6757-4443-857d-398918aa19f9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/chat",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"llama3.1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a file analysis assistant. Analyze the provided content and explain what the file contains.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this file content and tell me what it's about:\\n\\n\" + $json.text\n    }\n  ],\n  \"stream\": false,\n  \"temperature\": 0.7\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        256,
+        560
+      ],
+      "id": "55f94174-9487-4571-9f4a-93feb23b51a7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $node['HTTP Request'].json.message.content }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        928,
+        624
+      ],
+      "id": "24844fd8-1a2a-467d-9a1e-591f5be4637e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the assistant's message content from the HTTP Request node\nconst content = $input.first().json.message.content;\n\nlet cleanText = content;\n\n// If the content contains a JSON code block, try to extract it\nconst jsonMatch = content.match(/```json\\n([\\s\\S]*?)\\n```/);\nif (jsonMatch) {\n  try {\n    const parsed = JSON.parse(jsonMatch[1]);\n    // If the JSON has an \"Analysis\" array, format it nicely\n    if (parsed.Analysis && Array.isArray(parsed.Analysis)) {\n      cleanText = parsed.Analysis.map(item => \n        `${item.Title}: ${item.Description}`\n      ).join('\\n\\n');\n    } else {\n      // Otherwise, stringify the whole parsed JSON (pretty)\n      cleanText = JSON.stringify(parsed, null, 2);\n    }\n  } catch (e) {\n    // Fallback: keep the original content\n    cleanText = content;\n  }\n}\n\n// Return the cleaned text as a string (plain text)\nreturn [{\n  json: {\n    analysisText: cleanText\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        240
+      ],
+      "id": "5030b1a5-9277-46ef-bfd2-b32e439c8cbe",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {
+          "maxPages": 30
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        256
+      ],
+      "id": "99a96acc-27fd-4e02-b5f1-828587bb3edb",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "chatId": "Your-chat-id",
+        "text": "= {{ \"```\\n\" + $json.analysisText  + \"\\n```\" }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        304
+      ],
+      "id": "e96f4c52-34a6-446f-a1fe-511703751d7d",
+      "name": "Send a text message",
+      "webhookId": "364019f0-77ed-4e66-a490-8425c454bd76",
+      "credentials": {
+        "telegramApi": {
+          "id": "yBnpjALXtbWZuKBO",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "1a8d7bcd-dd79-4595-8f6c-56ca4fd7e58b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "289d954e80446e65aaaa508cdfec40b570dc4b3081f059d6dafbd962b484fad4"
+  },
+  "id": "1QMAv47cDPBwDt7Z",
+  "tags": []
+}

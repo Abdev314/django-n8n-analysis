@@ -1,0 +1,42 @@
+LEDning: 984
+
+LED OFF | Time running: 985
+
+running: 981
+
+LED ON | Time running: 982
+
+LED OFF | Time running: 983
+
+LED ON | Time running: 984
+
+LED OFF | Time running: 985
+
+running: 981
+
+LED ON | Time running: 982
+
+LED OFF | Time running: 983
+
+LED ON | Time running: 984
+
+LED OFF | Time running: 985
+
+Arduino Model: Arduino Uno
+
+LED Pin: 13
+
+Blink Mode: 1 second
+
+LED ON | Time running: 0
+
+LED OFF | Time running: 1
+
+LED ON | Time running: 2
+
+LED OFF | Time running: 3
+
+LED ON | Time running: 4
+
+LED OFF | Time running: 5
+
