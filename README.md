@@ -123,7 +123,7 @@ The workflow sends the AI response to your Telegram bot. Follow the steps below 
 https://api.telegram.org/bot[api-token]/getUpdates
 ```
 
-- 💬 Go back to your new bot in Telegram Web
+- 💬 Go back to your new bot in Telegram Web.
 
 - ▶️ Click **Start** or send any message (for example: `Hello`)
 
