@@ -246,4 +246,4 @@ docker compose down -v
 
 - No need to manually place files in folders – the web UI handles everything.
 
-Made with ❤️ for clean, powerful, fully containerized AI document analysis.
+Made with ❤️ 
